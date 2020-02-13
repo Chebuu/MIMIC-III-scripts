@@ -1,0 +1,154 @@
+-- Script to class into groups the diagnosis at the hospital admission
+-- 2020-02-13 Boris Delange
+
+-- Classes of diagnosis
+
+-- MEDICAL
+-- Neonatalogy and pediatrics
+-- Cardiovascular
+-- Respiratory
+-- Neurology
+-- Nephrology
+-- Hematology
+-- Hepatogastroenterology
+
+-- SURGICAL
+-- Cardiac surgery
+-- Abdominal surgery
+-- Neuro surgery
+-- Uro surgery
+-- Other surgery
+
+-- OTHER
+-- Infectiology not included elsewhere
+-- Traumatology and trauma surgery
+-- Other
+
+-- The order of classifiers is important.
+-- For example, the classifier "Infectiology not included elsewhere" searches all diagnoses containing "INFECTION".
+-- The "URINARY INFECTION" is included before, in the "Nephrology" classifier
+
+DROP MATERIALIZED VIEW IF EXISTS admission_dg_to_groups CASCADE;
+CREATE MATERIALIZED VIEW admission_dg_to_groups AS
+WITH t0 AS(
+SELECT subject_id, hadm_id, diagnosis
+,CASE WHEN diagnosis LIKE '%NEWBORN%' OR diagnosis LIKE '%PREMATURITY%' THEN 'Neonatalogy and pediatrics'
+
+WHEN diagnosis LIKE '%CARDIAC%' OR diagnosis LIKE '%CARDIO%' OR diagnosis LIKE '%CORONARY%' OR diagnosis LIKE '%MYOCARDIAL%'
+OR diagnosis LIKE '%STEMI%' OR diagnosis LIKE '%ACUTE MI%' OR diagnosis LIKE '%ETT%'
+OR diagnosis LIKE '%FLUTTER%' OR diagnosis LIKE '%FIBRILL%' OR diagnosis LIKE '%ANGINA%' OR diagnosis LIKE '%ARREST%' OR diagnosis LIKE '%BRADYC%'
+OR diagnosis LIKE '%HEART%' OR diagnosis LIKE '%SYNCOP%' OR diagnosis LIKE '%CAD%'OR diagnosis LIKE '%VESSEL DISEA%'
+OR diagnosis LIKE '%A%FIB%' OR diagnosis LIKE '%TACHYCARDIA%' OR diagnosis LIKE '%FRIBILLATION%' OR diagnosis LIKE '%ATHEROSCLERO%'
+OR diagnosis LIKE '%TROPONIN%' OR diagnosis LIKE '%BRADY%CAR%' OR diagnosis LIKE '%BRADY%ARR%'
+OR diagnosis LIKE 'CHF%' OR diagnosis LIKE 'CLAUDICATION%' OR diagnosis LIKE '%COLD%FOOT%'OR diagnosis LIKE '%COLD%LEG%'
+OR diagnosis LIKE '%PERICARDIT%' OR diagnosis LIKE '%CORNARY ART%' OR diagnosis LIKE '%VEIN THROMBOS%' OR diagnosis LIKE '%DIGOXIN%'
+OR diagnosis LIKE '%HYPERTENS%' OR diagnosis LIKE '%HYPERTENBS%' OR diagnosis LIKE '%ISCHEMIC ULC%' OR diagnosis LIKE '%ISCHEMIC%LEG%' OR diagnosis LIKE '%ISCHEMIC%FOOT%'
+OR diagnosis LIKE '%PERICARDIAL%' OR diagnosis LIKE '%TAMPONADE%' OR diagnosis LIKE '%VARICEAL%' OR diagnosis LIKE '%NON Q MI%' OR diagnosis LIKE '%R/O MI%'
+OR diagnosis LIKE 'MI' OR diagnosis LIKE '%MITRAL REG%' OR diagnosis LIKE '%ST ELEVATION%' OR diagnosis LIKE '%S/P MI%' OR diagnosis LIKE '%VASCULAR DISEASE%'
+OR diagnosis LIKE '%ARRHYTHM%' OR diagnosis LIKE '%EKG CHANGES%' OR diagnosis LIKE '%ARTERIAL OCCLUS%' OR diagnosis LIKE '%ARRYTHM%'
+OR diagnosis LIKE '%V-TACH%' OR diagnosis LIKE '%CHEST PAIN\CATH%'
+THEN 'Cardiovascular'
+
+WHEN diagnosis LIKE '%PNEUMONIA%' OR diagnosis LIKE '%PNEMONIA%' OR diagnosis LIKE '%RESPIRATORY%' OR diagnosis LIKE '%PULMONARY%'
+OR diagnosis LIKE '%BREATH%' OR diagnosis LIKE '%ASTHMA%' OR diagnosis LIKE '%COPD%' OR diagnosis LIKE '%CHRONIC OBS%'
+OR diagnosis LIKE '%DYSPNEA%' OR diagnosis LIKE '%HEMOPTYSIS%' OR diagnosis LIKE '%LUNG%' OR diagnosis LIKE '%HYPOXIA%' OR diagnosis LIKE '%AIRWAY%'
+OR diagnosis LIKE '%ARDS%' OR diagnosis LIKE '%BRONCH%' OR diagnosis LIKE '%HEMOTHORAX%' OR diagnosis LIKE '%PLEURAL%' OR diagnosis LIKE '%TRACH%'
+OR diagnosis LIKE '%EPIGLOT%' OR diagnosis LIKE '%APNEA%' OR diagnosis LIKE '%PNEUMONIT%' OR diagnosis LIKE '%PNEUMOTHORAX%'
+OR diagnosis LIKE '%PHEUMONIA%' OR diagnosis LIKE '%CHOKING%' OR diagnosis LIKE '%PLUERAL%' OR diagnosis LIKE '%ASPERGILOS%'
+OR diagnosis LIKE '%EMPHYSEM%' OR diagnosis LIKE '%HYPERCAPN%' OR diagnosis LIKE '%STRIDOR%' OR diagnosis LIKE '%RESP DISTRESS%' OR diagnosis LIKE '%PNEUMOSEPS%'
+THEN 'Respiratory'
+
+WHEN diagnosis LIKE '%MENTAL%' OR diagnosis LIKE '%STROKE%' OR diagnosis LIKE '%SEIZURE%'
+OR diagnosis LIKE '%EPILEP%' OR diagnosis LIKE '%CEREBRAL%' OR diagnosis LIKE '%CEREBRO%'
+OR diagnosis LIKE '%ENCEPHAL%' OR diagnosis LIKE '%MENING%' OR diagnosis LIKE '%ACUTE CVA%' OR diagnosis LIKE '%APHASIA%'
+OR diagnosis LIKE '%CONFUSION%' OR diagnosis LIKE '%MYASTHEN%' OR diagnosis LIKE '%UNRESPON%' OR diagnosis LIKE '%ALTERED [MNE]%'
+OR diagnosis LIKE '%PARAPLEGIA%'OR diagnosis LIKE '%BRAIN CONTUS%' OR diagnosis LIKE '%CNS INFECT%' OR diagnosis LIKE '%DELIRIUM%'
+OR diagnosis LIKE '%ENCEPHELITIS%' OR diagnosis LIKE '%GUILL%' OR diagnosis LIKE 'CVA%' OR diagnosis LIKE '%ISCHEMIC ATTACK%'
+THEN 'Neurology'
+
+WHEN  diagnosis LIKE '%NATREMI%' OR diagnosis LIKE '%RENAL FAIL%' OR diagnosis LIKE '%PYELO%' OR diagnosis LIKE '%DEHYDRAT%'
+OR diagnosis LIKE '%GLYCEM%' OR diagnosis LIKE '%KETOACIDO%' OR diagnosis LIKE '%KALEM%' OR diagnosis LIKE '%RHABDOMY%'
+OR diagnosis LIKE '%KIDNEY TRANS%REJECT%' OR diagnosis LIKE '%ACIDEMIA%' OR diagnosis LIKE '%ADRENAL INSUFF%' OR diagnosis LIKE '%ADRENAL CRIS%'
+OR diagnosis LIKE '%ACUTE RENAL%' OR diagnosis LIKE '%CLOTTED AV%' OR diagnosis LIKE '%KEOACID%' OR diagnosis LIKE '%KETO%CIDO%'
+OR diagnosis LIKE '%CREATININE%' OR diagnosis LIKE '%RENAL DISEAS%' OR diagnosis LIKE '%KIDNEY DISEAS%'
+OR diagnosis LIKE '%HYPERCA%' OR diagnosis LIKE '%KIDNEY STONE%' OR diagnosis LIKE '%KIDNEY TRANSPLANT%' OR diagnosis LIKE '%URINARY%INFECTION%'
+OR diagnosis LIKE '%HEMATURIA%' OR diagnosis LIKE 'DKA%' OR diagnosis LIKE '%ACIDOSIS%' OR diagnosis LIKE '%KIDNEY FAIL%' OR diagnosis LIKE '%UROSEPSIS%'
+THEN 'Nephrology'
+
+WHEN diagnosis LIKE '%ANEMIA%' OR diagnosis LIKE '%LEUKEMIA%' OR diagnosis LIKE '%LYMPHOMA%' OR diagnosis LIKE '%AML%'
+OR diagnosis LIKE '%LEAUKEM%' OR diagnosis LIKE '%LEUKEMIC%' OR diagnosis LIKE '%LUKEMIA%' OR diagnosis LIKE '%WHITE%COUNT%'
+OR diagnosis LIKE '%THROMBOCYTOP%' OR diagnosis LIKE '%NEUTROPENIA%' OR diagnosis LIKE '%PANCYTOPEN%' OR diagnosis LIKE '%NEUTROPENIC FEV%'
+THEN 'Hematology'
+
+WHEN diagnosis LIKE '%ABDOMINAL PAIN%' OR diagnosis LIKE '%ABD PAIN%' OR diagnosis LIKE '%GASTROINTESTINAL%' OR diagnosis LIKE '%MELENA%'
+OR diagnosis LIKE '%LIVER%' OR diagnosis LIKE '%HEPAT%' OR diagnosis LIKE '%PANCREATI%' OR diagnosis LIKE '%UPPER % BLEED%'
+OR diagnosis LIKE '%ASCIT%' OR diagnosis LIKE '%CIRRHO%' OR diagnosis LIKE '%RECTUM%'
+OR diagnosis LIKE '%GI %BLEED%' OR diagnosis LIKE '%INTESTINAL BLEED%' OR diagnosis LIKE '%PORTAL VEIN%'
+OR diagnosis LIKE '%ABDO%BLEED%' OR diagnosis LIKE '%ABDO%INFECT%' OR diagnosis LIKE '%ACHALASIA%' OR diagnosis LIKE '%CHOLENGI%'
+OR diagnosis LIKE '%GASTROENTER%' OR diagnosis LIKE '%COLANGI%' OR diagnosis LIKE '%GASTRIC BLEED%' OR diagnosis LIKE '%HEMATEMES%'
+OR diagnosis LIKE '%JAUNDICE%' OR diagnosis LIKE '%RECTAL BLEED%' OR diagnosis LIKE '%CROHN%' OR diagnosis LIKE '%DYSPHAGIA%' OR diagnosis LIKE '%ESOPHAGEAL VAR%'
+OR diagnosis LIKE '%G.I. BLEED%' OR diagnosis LIKE '%GASTRIC CA%' OR diagnosis LIKE '%TYLENOL%'
+THEN 'Hepatogastroenterology'
+
+WHEN diagnosis LIKE '%AAA%' OR diagnosis LIKE '%AORTIC%' OR diagnosis LIKE '%CAROTID%'
+OR diagnosis LIKE '%ABDOMINAL ANEUR%' OR diagnosis LIKE '%AORTIC%ANEUR%' OR diagnosis LIKE '%THORACIC ANEUR%'
+OR diagnosis LIKE '%AORTIC%DISSECT%'  OR diagnosis LIKE '%CAROTID%DISSECT%'OR diagnosis LIKE '%ATRIAL%DEFECT%'
+OR diagnosis LIKE '%VALVE REPLACE%' OR diagnosis LIKE '%BENTALL%' OR diagnosis LIKE '%ANEURYSM/SDA%' OR diagnosis LIKE '%TYPE A DISS%'
+OR diagnosis LIKE '%MITRAL VALVE DIS%'
+THEN 'Cardiac surgery'
+
+WHEN diagnosis LIKE '%BOWEL%' OR diagnosis LIKE '%COLITIS%' OR diagnosis LIKE '%ABDOMINAL ABSC%' OR diagnosis LIKE '%CHOLECY%TI%' OR diagnosis LIKE '%SIGMOID%'
+OR diagnosis LIKE '%PERITON%' OR diagnosis LIKE '%BILE%' OR diagnosis LIKE '%BILI%' OR diagnosis LIKE '%CHOLANG%' OR diagnosis LIKE '%COLON%'
+OR diagnosis LIKE '%DIVERTICUL%' OR diagnosis LIKE '%PERFORATION%' OR diagnosis LIKE '%ENTERO%FISTULA%' OR diagnosis LIKE '%FOURNIER%'
+OR diagnosis LIKE '%VOLVULUS%' OR diagnosis LIKE '%ABDOMINAL ABC%' OR diagnosis LIKE '%ABDO%MASS%' OR diagnosis LIKE '%CHOLEYC%' OR diagnosis LIKE '%CHOLYCYS%'
+OR diagnosis LIKE '%ADRENAL MASS%' OR diagnosis LIKE '%APPENDICI%' OR diagnosis LIKE '%ABDOM%HERN%' OR diagnosis LIKE '%GALLSTONE%'
+OR diagnosis LIKE '%CHOLEDOCO%' OR diagnosis LIKE '%COLECTOMY%' OR diagnosis LIKE '%GASTRIC CANC%' OR diagnosis LIKE '%ESOPHAGEAL CA%'
+OR diagnosis LIKE '%SPLENIC LACER%' OR diagnosis LIKE '%MESENTERIC ISCH%' OR diagnosis LIKE '%VENTRAL HERN%' OR diagnosis LIKE '%PELVIC MASS%'
+OR diagnosis LIKE '%CHOLEDOCOLITH%' OR diagnosis LIKE '%PERFORATED DUO%' OR diagnosis LIKE '%HERNIA%'
+THEN 'Abdominal surgery'
+
+WHEN diagnosis LIKE '%SUBARACHNOID%' OR diagnosis LIKE '%SUBDURAL%' OR diagnosis LIKE '%EPIDURAL%' OR diagnosis LIKE '%HEAD BLEED%' OR diagnosis LIKE '%HEAD MASS%'
+OR diagnosis LIKE '%BRAIN TUMOR%' OR diagnosis LIKE '%BRAIN MASS%' OR diagnosis LIKE '%BRAIN HERN%' OR diagnosis LIKE '%BRAIN META%' 
+OR diagnosis LIKE '%BRAIN ANEU%' OR diagnosis LIKE '%BRAIN BLEED%' OR diagnosis LIKE '%CRANIAL%' OR diagnosis LIKE '%INTRAVENTRICUL%' 
+OR diagnosis LIKE '%SPINE%' OR diagnosis SIMILAR TO 'C[0-9]%' OR diagnosis LIKE '%CEREBELL%MASS%' OR diagnosis LIKE '%CEREBELL%BLEED%' OR diagnosis LIKE '%CEREBELL%HEM%'
+OR diagnosis LIKE '%CERVICAL%' OR diagnosis LIKE '%HYDROCEPHAL%' OR diagnosis LIKE '%ACOUSTIC NEUR%' OR diagnosis LIKE '%BRAIN CANCER%'
+OR diagnosis LIKE '%BRAIN EDEMA%' OR diagnosis LIKE '%C SECTION%' OR diagnosis LIKE '%C 3%' OR diagnosis LIKE '%CHIARI%MAL%'
+OR diagnosis LIKE '%CNS MASS%' OR diagnosis LIKE '%CORD COMPRESS%' OR diagnosis LIKE '%CRANIOTOMY%' OR diagnosis LIKE '%INTRAPARENCHYMAL B%'
+OR diagnosis LIKE '%INTRAPARENCHYMAL HEMORR%'  OR diagnosis LIKE '%LUMBAR STENO%' OR diagnosis LIKE '%ICH' OR diagnosis LIKE '%SUB ARACHNOID HEMO%'
+OR diagnosis LIKE '%SPINAL STENOSIS%' OR diagnosis LIKE '%THALAMIC BLEED%' OR diagnosis LIKE '%SPINAL FRACT%'
+THEN 'Neuro surgery'
+
+WHEN diagnosis LIKE '%BLADDER CA%' OR diagnosis LIKE '%PROSTATE CA%' OR diagnosis LIKE '%RENAL CA%'
+THEN 'Uro surgery'
+
+WHEN diagnosis LIKE '%GANGRENE%'
+THEN 'Other surgery'
+
+WHEN diagnosis LIKE '%ENDOCARD%' OR diagnosis LIKE '%SEPSIS%'
+OR diagnosis LIKE '%WOUND INFEC%' OR diagnosis LIKE '%INFECT%WOUND%' OR diagnosis LIKE '%FEVER%' OR diagnosis LIKE '%SEPTIC%' OR diagnosis LIKE '%ABSCESS%'
+OR diagnosis LIKE '%CELLUL%TI%' OR diagnosis LIKE '%INFECTED%' OR diagnosis LIKE '%BACTEREM%' OR diagnosis LIKE '%INFECTION%'
+THEN 'Infectiology not included elsewhere'
+
+-- %WOUND% searched before %INFECTION% includes all non-infectious causes in Traumatology
+WHEN diagnosis LIKE '%FRACTURE%' OR diagnosis LIKE '%STRUCK%' OR diagnosis LIKE '%FALL%' OR diagnosis LIKE '%TRAUMA%' OR diagnosis LIKE '%S/P FALL%' OR
+diagnosis LIKE '%VEHICLE ACCIDENT%' OR diagnosis LIKE '%CYCLE ACCIDENT%' OR diagnosis LIKE '%WOUND%' OR diagnosis LIKE '%SKULL FX%'
+OR diagnosis LIKE '%MVA%'
+THEN 'Traumatology and trauma surgery'
+
+WHEN diagnosis LIKE '%HYPOTENSION%' OR diagnosis LIKE '%HYPOTHERM%' OR diagnosis LIKE '%OVERDOSE%'
+OR diagnosis LIKE '%ANAPH%' OR diagnosis LIKE '%ANGIOED%' OR diagnosis LIKE '%DIARRH%'
+OR diagnosis LIKE '%PAIN%' OR diagnosis LIKE '%WEAKNESS%' OR diagnosis LIKE '%CHEST PAIN%' OR diagnosis LIKE '%AGITATION%'
+OR diagnosis LIKE '%ALCOHOL%' OR diagnosis LIKE '%ALLERGIC%' OR diagnosis LIKE '%ANOREX%' OR diagnosis LIKE '%ANXIETY%'
+OR diagnosis LIKE '%INTOXICAT%' OR diagnosis LIKE '%ANTICOAGUL%' OR diagnosis LIKE '%ANTICHOLIN%' OR diagnosis LIKE '%THYROID%'
+OR diagnosis LIKE '%ANGI%DEM%' OR diagnosis LIKE '%EPISTA%' OR diagnosis LIKE '%ETOH %'
+OR diagnosis LIKE '%HEADACHE%' OR diagnosis LIKE '%MORBID OBESI%' OR diagnosis LIKE '%HEAD INJURY%' OR diagnosis LIKE '%SCOLIOSIS%'
+OR diagnosis LIKE '%ORGAN DONOR%' OR diagnosis LIKE 'SAH' OR diagnosis LIKE 'ANEURYSM' OR diagnosis LIKE 'VOMITING'
+OR diagnosis LIKE '%BREAST CANCER%' OR diagnosis LIKE '%FAILURE TO THRIVE%'
+THEN 'Other'
+ELSE 'Other'
+
+END AS diagnosis_class
+FROM admissions
+)
+SELECT subject_id, hadm_id, diagnosis_class, diagnosis 
+FROM t0;
